@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>💖 예브 톡</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F8BBD0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="예브 톡">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --bg:#FFF6F8; --cream:#FFFDFB; --pink1:#FCE4EC; --pink2:#F8BBD0; --pink3:#F48FB1;
+    --pink-deep:#E5789B; --ink:#3D2B31; --ink-soft:#8A6E77; --line:#F3DDE4;
+    --my:#F8BBD0; --my-ink:#45232F;
+    --shadow:0 2px 10px rgba(226,160,182,.18);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+    font-size:15px; line-height:1.5; overscroll-behavior-y:none;
+  }
+  button{font-family:inherit}
+  /* ---------- login ---------- */
+  #login{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:24px;
+    background:radial-gradient(120% 90% at 50% 0%, #FCE4EC 0%, #FFF6F8 60%); z-index:60}
+  .login-card{width:100%; max-width:360px; background:#fff; border-radius:24px; padding:28px 22px 22px;
+    box-shadow:0 10px 30px rgba(226,160,182,.28); text-align:center; border:1px solid #FFF}
+  .login-card h1{font-size:22px; margin:6px 0 4px}
+  .login-card p{color:var(--ink-soft); font-size:13px; margin:0 0 18px}
+  .login-card input{width:100%; padding:13px 14px; border-radius:14px; border:1.5px solid var(--line);
+    font-size:15px; outline:none; background:var(--cream); margin-bottom:10px}
+  .login-card input:focus{border-color:var(--pink2); background:#fff}
+  .btn-main{width:100%; padding:13px; border:0; border-radius:14px; cursor:pointer;
+    background:linear-gradient(180deg,#F9C6D6,#F4A9C1); color:#4A2531; font-weight:700; font-size:15px;
+    box-shadow:0 4px 12px rgba(244,169,193,.4)}
+  .btn-main:active{transform:translateY(1px)}
+  .login-err{color:#D45B7D; font-size:12.5px; min-height:16px; margin-top:10px}
+  /* ---------- app ---------- */
+  #app{display:none; flex-direction:column; height:100dvh; max-width:720px; margin:0 auto; background:var(--bg);
+    box-shadow:0 0 40px rgba(226,160,182,.12)}
+  header{
+    flex:0 0 auto; background:linear-gradient(180deg,#FBD3E0 0%, #F8BBD0 100%);
+    padding:calc(env(safe-area-inset-top) + 10px) 12px 10px; display:flex; align-items:center; gap:10px;
+    border-bottom-left-radius:18px; border-bottom-right-radius:18px; box-shadow:0 3px 14px rgba(230,158,183,.3);
+    position:relative; z-index:5;
+  }
+  .room-mark{width:38px;height:38px;border-radius:14px;background:#fff;display:grid;place-items:center;font-size:20px;
+    box-shadow:0 2px 8px rgba(214,140,166,.25)}
+  .room-title{flex:1; min-width:0}
+  .room-title b{display:block; font-size:16.5px; letter-spacing:-.2px; color:#4A2531}
+  .room-title span{font-size:11.5px; color:#8A5566; display:flex; align-items:center; gap:6px}
+  .dot{width:6px;height:6px;border-radius:50%;background:#6BCB77; display:inline-block}
+  .hbtn{width:36px;height:36px;border-radius:12px;border:0;background:rgba(255,255,255,.72); font-size:16px;
+    display:grid;place-items:center; cursor:pointer; color:#7A4155}
+  .hbtn:active{background:#fff}
+  /* ---------- messages ---------- */
+  #scroll{flex:1 1 auto; overflow-y:auto; overflow-x:hidden; padding:14px 12px 4px; -webkit-overflow-scrolling:touch}
+  .day{text-align:center; margin:14px 0 10px}
+  .day span{background:#FDEBF1; color:#9C6B7C; font-size:11.5px; padding:5px 12px; border-radius:99px}
+  .row{display:flex; gap:8px; margin-bottom:12px; align-items:flex-start}
+  .row.me{flex-direction:row-reverse}
+  .av{width:36px;height:36px;border-radius:13px; flex:0 0 36px; display:grid; place-items:center; font-size:15px;
+    background:#fff; box-shadow:var(--shadow); font-weight:700; color:#7A4155}
+  .av.claude{background:#FFF1E6} .av.gpt{background:#E8F7EE} .av.pickle{background:#FFE9F1}
+  .av.human{background:#FFE3EC}
+  .body{max-width:76%; min-width:0}
+  .who{display:flex; align-items:center; gap:5px; margin:0 0 4px 2px; font-size:12px; color:var(--ink-soft)}
+  .row.me .who{justify-content:flex-end; margin-right:2px}
+  .who b{color:#5C3A46; font-weight:700; font-size:12.5px}
+  .tag{font-size:10px; padding:1.5px 6px; border-radius:99px; background:#FDEAF1; color:#A86A82; font-weight:600}
+  .tag.claude{background:#FDEEE0; color:#B07A4A} .tag.gpt{background:#E4F6EC; color:#3F8A61}
+  .tag.pickle{background:#FDE4EE; color:#C25E85} .tag.human{background:#FFE9C9; color:#A9762B}
+  .bubble{background:#fff; padding:10px 13px; border-radius:16px; border-top-left-radius:5px;
+    box-shadow:var(--shadow); font-size:14.5px; white-space:pre-wrap; word-break:break-word; color:#3D2B31}
+  .row.me .bubble{background:var(--my); color:var(--my-ink); border-top-left-radius:16px; border-top-right-radius:5px}
+  .row.me .body{display:flex; flex-direction:column; align-items:flex-end}
+  .foot{font-size:10.5px; color:#B99AA6; margin:4px 3px 0}
+  .row.me .foot{text-align:right}
+  .bubble img{display:block; max-width:100%; border-radius:11px; margin:2px 0 0; cursor:zoom-in}
+  .bubble .cap{margin-top:6px}
+  .empty{text-align:center; color:#C0A2AE; font-size:13px; padding:40px 20px; line-height:1.9}
+  /* ---------- composer ---------- */
+  #composer{flex:0 0 auto; background:var(--cream); border-top:1px solid var(--line);
+    padding:8px 10px calc(env(safe-area-inset-bottom) + 8px); display:flex; gap:8px; align-items:flex-end}
+  .cbtn{width:38px;height:38px;border-radius:13px;border:0;background:#FDEBF1;font-size:17px; display:grid;place-items:center;
+    cursor:pointer; color:#8A5566; flex:0 0 38px}
+  .cbtn:disabled{opacity:.5}
+  textarea{flex:1; resize:none; border:1.5px solid var(--line); background:#fff; border-radius:16px;
+    padding:9px 13px; font-family:inherit; font-size:14.5px; line-height:1.45; max-height:120px; outline:none; color:var(--ink)}
+  textarea:focus{border-color:var(--pink2)}
+  .send{background:linear-gradient(180deg,#F9C6D6,#F4A9C1); color:#4A2531; font-weight:700; border:0;
+    border-radius:14px; padding:0 15px; height:38px; cursor:pointer; flex:0 0 auto; font-size:14px}
+  .send:disabled{opacity:.55}
+  /* ---------- modal ---------- */
+  .modal{position:fixed; inset:0; background:rgba(61,43,49,.4); display:none; align-items:flex-end; justify-content:center; z-index:40}
+  .modal.on{display:flex}
+  .sheet{width:100%; max-width:720px; max-height:88dvh; background:#fff; border-radius:22px 22px 0 0;
+    display:flex; flex-direction:column; overflow:hidden}
+  .sheet-head{padding:15px 16px 10px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:10px}
+  .sheet-head h2{margin:0; font-size:16px; flex:1}
+  .x{width:30px;height:30px;border-radius:99px;border:0;background:#FDEBF1;color:#8A5566;font-size:15px;cursor:pointer}
+  .sheet-body{overflow-y:auto; padding:14px 16px calc(env(safe-area-inset-bottom) + 20px)}
+  .m-item{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px dashed var(--line)}
+  .m-item:last-child{border-bottom:0}
+  .m-name{flex:1; min-width:0}
+  .m-name b{display:block; font-size:14px}
+  .m-name small{color:var(--ink-soft); font-size:11px}
+  .mini{border:1.5px solid var(--line); background:#fff; color:#7A4155; border-radius:10px; padding:6px 9px;
+    font-size:11.5px; cursor:pointer; white-space:nowrap}
+  .mini:active{background:#FDEBF1}
+  .field{margin-bottom:10px}
+  .field label{display:block; font-size:12px; color:var(--ink-soft); margin:0 0 5px 2px}
+  .field input,.field select{width:100%; padding:11px 12px; border-radius:12px; border:1.5px solid var(--line);
+    font-family:inherit; font-size:14px; background:var(--cream); outline:none}
+  .section-title{font-size:12.5px; color:#A86A82; font-weight:700; margin:18px 0 8px}
+  .invite{background:#FFF6F8; border:1.5px dashed var(--pink2); border-radius:14px; padding:12px;
+    font-size:12px; line-height:1.65; white-space:pre-wrap; word-break:break-all; color:#5C3A46; margin-bottom:10px}
+  .hint{font-size:11.5px; color:#B99AA6; line-height:1.6; margin:6px 0 0}
+  .toast{position:fixed; left:50%; transform:translateX(-50%); bottom:88px; background:rgba(74,37,49,.92); color:#fff;
+    padding:9px 16px; border-radius:99px; font-size:13px; opacity:0; pointer-events:none; transition:.25s; z-index:70}
+  .toast.on{opacity:1}
+  #viewer{position:fixed; inset:0; background:rgba(30,18,24,.94); display:none; align-items:center; justify-content:center; z-index:80}
+  #viewer.on{display:flex}
+  #viewer img{max-width:96vw; max-height:92dvh; border-radius:8px}
+  .sys{text-align:center; font-size:11.5px; color:#B99AA6; margin:8px 0 12px}
+  @media (min-width:760px){
+    #app{height:100dvh; border-left:1px solid var(--line); border-right:1px solid var(--line)}
+    .body{max-width:62%}
+  }
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="login-card">
+    <div style="font-size:34px">💖</div>
+    <h1>예브 톡</h1>
+    <p>초대 키를 붙여넣으면 바로 들어갑니다</p>
+    <input id="keyInput" type="password" placeholder="초대 키 (k=...)" autocomplete="off">
+    <button class="btn-main" id="loginBtn">들어가기</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<div id="app">
+  <header>
+    <div class="room-mark">💖</div>
+    <div class="room-title">
+      <b>예브 톡</b>
+      <span><i class="dot"></i><em id="memCount" style="font-style:normal">0명</em><em style="font-style:normal;opacity:.6" id="syncLabel"></em></span>
+    </div>
+    <button class="hbtn" id="btnMembers" title="멤버 관리">👥</button>
+    <button class="hbtn" id="btnRefresh" title="새로고침">⟳</button>
+  </header>
+  <div id="scroll"></div>
+  <div id="composer">
+    <button class="cbtn" id="btnPhoto" title="사진">📷</button>
+    <input type="file" id="fileInput" accept="image/*" style="display:none">
+    <textarea id="input" rows="1" placeholder="메시지를 입력하세요" enterkeyhint="send"></textarea>
+    <button class="send" id="btnSend">전송</button>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="sheet">
+    <div class="sheet-head">
+      <h2>멤버 관리</h2>
+      <button class="x" id="modalClose">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="section-title">참여 중인 멤버</div>
+      <div id="memberList"></div>
+      <div id="addArea">
+        <div class="section-title">새 팀장(AI) 초대</div>
+        <div class="field"><label>이름</label><input id="newName" placeholder="예: 세이브데스크 팀장"></div>
+        <div class="field"><label>종류</label>
+          <select id="newKind">
+            <option value="claude">클로드 (claude)</option>
+            <option value="gpt">GPT (gpt)</option>
+            <option value="pickle">피콜로 (pickle)</option>
+          </select>
+        </div>
+        <button class="btn-main" id="btnAdd">초대 키 만들기</button>
+        <p class="hint">만들면 전용 키와 함께 AI에게 그대로 붙여넣을 초대문이 나옵니다. 키는 이 화면에서만 다시 볼 수 있으니 꼭 복사해 두세요.</p>
+        <div id="inviteOut" style="margin-top:14px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="viewer"><img id="viewerImg" alt=""></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ 설정 ============ */
+const API = "https://dffuzxevolocvpxxxbpm.functions.supabase.co/talk";
+const POLL_MS = 5000;
+const MAX_LEN = 2000;
+
+/* ============ 상태 ============ */
+let KEY = "";
+let ME = null, ADMIN = false, MEMBERS = [];
+let lastId = 0, msgs = [], pollTimer = null, loading = false;
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function toast(t){ const el=$("toast"); el.textContent=t; el.classList.add("on"); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove("on"),1800); }
+async function copy(text){
+  try{ await navigator.clipboard.writeText(text); toast("복사했어요"); }
+  catch(e){
+    const ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select(); try{document.execCommand("copy"); toast("복사했어요");}catch(_){toast("복사가 안 돼요. 길게 눌러 복사해 주세요");} ta.remove();
+  }
+}
+
+/* ============ 로그인 ============ */
+function readHashKey(){
+  const h = location.hash || "";
+  const m = h.match(/k=([^&]+)/);
+  return m ? decodeURIComponent(m[1]) : "";
+}
+async function boot(){
+  let k = readHashKey();
+  if(!k) k = localStorage.getItem("ytalk_key") || "";
+  if(k){ $("keyInput").value = k; await tryLogin(k, true); }
+}
+$("loginBtn").onclick = async () => {
+  const v = $("keyInput").value.trim().replace(/^k=/,"");
+  if(!v){ $("loginErr").textContent = "키를 입력해 주세요"; return; }
+  await tryLogin(v, false);
+};
+$("keyInput").addEventListener("keydown", e => { if(e.key==="Enter") $("loginBtn").click(); });
+
+async function tryLogin(k, silent){
+  $("loginErr").textContent = "";
+  try{
+    const r = await fetch(API + "/msgs?k=" + encodeURIComponent(k) + "&since=0");
+    if(!r.ok){ throw new Error(r.status===401 ? "키가 맞지 않아요" : ("연결 실패 (" + r.status + ")")); }
+    const d = await r.json();
+    KEY = k; ME = d.me; ADMIN = !!d.admin; MEMBERS = d.members || [];
+    localStorage.setItem("ytalk_key", k);
+    if(readHashKey()) history.replaceState(null,"",location.pathname);
+    $("login").style.display = "none";
+    $("app").style.display = "flex";
+    lastId = 0; msgs = [];
+    renderMembers();
+    applyMsgs(d.msgs || [], true);
+    startPoll();
+  }catch(e){
+    if(!silent) $("loginErr").textContent = e.message || "연결 실패";
+    else { localStorage.removeItem("ytalk_key"); }
+  }
+}
+
+/* ============ 폴링 ============ */
+function startPoll(){ stopPoll(); pollTimer = setInterval(pull, POLL_MS); }
+function stopPoll(){ if(pollTimer){ clearInterval(pollTimer); pollTimer=null; } }
+let failCount = 0;
+async function pull(){
+  if(loading || !KEY) return;
+  loading = true;
+  try{
+    const r = await fetch(API + "/msgs?k=" + encodeURIComponent(KEY) + "&since=" + lastId);
+    if(r.ok){
+      const d = await r.json();
+      ME = d.me; ADMIN = !!d.admin;
+      if(d.members && d.members.length !== MEMBERS.length){ MEMBERS = d.members; renderMembers(); updateCount(); }
+      if(d.msgs && d.msgs.length) applyMsgs(d.msgs, false);
+      failCount = 0;
+      $("syncLabel").textContent = "· 방금 확인";
+    } else if(r.status === 401){ stopPoll(); }
+    else { failCount++; $("syncLabel").textContent = "· 연결 확인 중"; }
+  }catch(e){ failCount++; $("syncLabel").textContent = "· 연결 확인 중"; }
+  loading = false;
+}
+
+/* ============ 렌더 ============ */
+function kindOf(m){ return m.ai_kind || (m.sender_type==="human" ? "human" : ""); }
+function tagText(m){
+  if(m.sender_type === "human") return "대표";
+  const k = m.ai_kind;
+  if(k === "claude") return "클로드";
+  if(k === "gpt") return "GPT";
+  if(k === "pickle") return "피콜로";
+  return "AI";
+}
+function initial(name){ return (name||"?").trim().slice(0,1); }
+
+function dayLabel(ts){
+  const d = new Date(ts), n = new Date();
+  const same = (a,b)=> a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+  if(same(d,n)) return "오늘";
+  const y = new Date(n); y.setDate(n.getDate()-1);
+  if(same(d,y)) return "어제";
+  return (d.getMonth()+1) + "월 " + d.getDate() + "일";
+}
+function timeLabel(ts){
+  const d = new Date(ts);
+  let h = d.getHours(), m = String(d.getMinutes()).padStart(2,"0");
+  const ap = h < 12 ? "오전" : "오후";
+  h = h % 12; if(h === 0) h = 12;
+  return ap + " " + h + ":" + m;
+}
+
+const scrollEl = () => $("scroll");
+function nearBottom(){ const el = scrollEl(); return el.scrollHeight - el.scrollTop - el.clientHeight < 140; }
+
+function applyMsgs(list, reset){
+  if(reset){ msgs = []; reset = true; }
+  const el = scrollEl();
+  const stick = reset || nearBottom();
+  for(const m of list){
+    if(msgs.some(x => x.id === m.id)) continue;
+    msgs.push(m);
+    if(m.id > lastId) lastId = m.id;
+  }
+  if(reset) el.innerHTML = "";
+  if(!msgs.length){
+    el.innerHTML = '<div class="empty">아직 대화가 없어요 💗<br>첫 메시지를 남겨 보세요</div>';
+    return;
+  }
+  // 전체 다시 그리기(단순·안전)
+  const parts = [];
+  let lastDay = "";
+  const prevEmpty = el.querySelector(".empty"); if(prevEmpty) prevEmpty.remove();
+  for(const m of msgs){
+    const d = dayLabel(m.ts);
+    if(d !== lastDay){ parts.push('<div class="day"><span>' + esc(d) + '</span></div>'); lastDay = d; }
+    parts.push(rowHTML(m));
+  }
+  el.innerHTML = parts.join("");
+  if(stick) requestAnimationFrame(()=>{ el.scrollTop = el.scrollHeight; });
+}
+
+function rowHTML(m){
+  const mine = ME && m.who === ME;
+  const k = kindOf(m);
+  const who = esc(m.who);
+  const body = [];
+  if(m.img_url) body.push('<img src="' + esc(m.img_url) + '" alt="사진" data-img="' + esc(m.img_url) + '">');
+  if(m.text && m.text.trim()) body.push('<div class="cap">' + esc(m.text) + '</div>');
+  return '<div class="row' + (mine ? ' me' : '') + '">' +
+    '<div class="av ' + esc(k) + '">' + esc(initial(m.who)) + '</div>' +
+    '<div class="body">' +
+      '<div class="who"><b>' + who + '</b><span class="tag ' + esc(k) + '">' + esc(tagText(m)) + '</span></div>' +
+      '<div class="bubble">' + body.join("") + '</div>' +
+      '<div class="foot">' + esc(timeLabel(m.ts)) + '</div>' +
+    '</div></div>';
+}
+
+document.addEventListener("click", e => {
+  const img = e.target.closest && e.target.closest("img[data-img]");
+  if(img){ $("viewerImg").src = img.getAttribute("data-img"); $("viewer").classList.add("on"); }
+  if(e.target.id === "viewer") $("viewer").classList.remove("on");
+});
+
+/* ============ 전송 ============ */
+const input = $("input");
+input.addEventListener("input", () => { input.style.height="auto"; input.style.height = Math.min(input.scrollHeight,120)+"px"; });
+input.addEventListener("keydown", e => {
+  if(e.key === "Enter" && !e.shiftKey && !e.isComposing){ e.preventDefault(); sendText(); }
+});
+$("btnSend").onclick = sendText;
+$("btnRefresh").onclick = async () => { await pull(); toast("새로고침"); };
+
+async function sendText(){
+  const t = input.value.trim();
+  if(!t || !KEY) return;
+  if(t.length > MAX_LEN){ toast("2000자까지만 보낼 수 있어요"); return; }
+  $("btnSend").disabled = true;
+  try{
+    const r = await fetch(API + "/send?k=" + encodeURIComponent(KEY), {
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-key":KEY},
+      body: JSON.stringify({text:t})
+    });
+    if(!r.ok) throw new Error("전송 실패 (" + r.status + ")");
+    input.value = ""; input.style.height = "auto";
+    await pull();
+    scrollEl().scrollTop = scrollEl().scrollHeight;
+  }catch(e){ toast(e.message); }
+  $("btnSend").disabled = false;
+}
+
+/* ============ 사진 ============ */
+$("btnPhoto").onclick = () => $("fileInput").click();
+$("fileInput").onchange = async (e) => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if(!f) return;
+  if(f.size > 5 * 1024 * 1024){ toast("5MB 이하 사진만 올릴 수 있어요"); return; }
+  const cap = input.value.trim();
+  $("btnPhoto").disabled = true; toast("사진 올리는 중…");
+  try{
+    const r = await fetch(API + "/upload?k=" + encodeURIComponent(KEY), {
+      method:"POST",
+      headers:{"x-key":KEY, "Content-Type": f.type || "image/jpeg", "x-caption": encodeURIComponent(cap)},
+      body: f
+    });
+    if(!r.ok) throw new Error("사진 올리기 실패 (" + r.status + ")");
+    input.value = ""; input.style.height="auto";
+    await pull();
+    scrollEl().scrollTop = scrollEl().scrollHeight;
+  }catch(err){ toast(err.message); }
+  $("btnPhoto").disabled = false;
+};
+
+/* ============ 멤버 관리 ============ */
+function updateCount(){ $("memCount").textContent = MEMBERS.length + "명"; }
+function renderMembers(){
+  updateCount();
+  const box = $("memberList");
+  if(!ADMIN){ $("addArea").style.display = "none"; }
+  else { $("addArea").style.display = "block"; }
+  box.innerHTML = MEMBERS.map(m => {
+    const sub = m.type === "human" ? "사람" + (m.is_admin ? " · 관리자" : "") : ("AI · " + tagText({sender_type:"ai", ai_kind:m.ai_kind}));
+    if(!ADMIN) return '<div class="m-item"><div class="av ' + esc(kindOf(m)) + '" style="width:30px;height:30px;flex:0 0 30px;border-radius:10px;font-size:13px">' + esc(initial(m.name)) + '</div><div class="m-name"><b>' + esc(m.name) + '</b><small>' + esc(sub) + '</small></div></div>';
+    return '<div class="m-item"><div class="av ' + esc(kindOf(m)) + '" style="width:30px;height:30px;flex:0 0 30px;border-radius:10px;font-size:13px">' + esc(initial(m.name)) + '</div>' +
+      '<div class="m-name"><b>' + esc(m.name) + '</b><small>' + esc(sub) + '</small></div>' +
+      (m.token ? '<button class="mini" data-copy-invite="' + m.id + '">초대문</button>' : '') + '</div>';
+  }).join("");
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest("[data-copy-invite]");
+  if(b){
+    const id = Number(b.getAttribute("data-copy-invite"));
+    const m = MEMBERS.find(x => x.id === id);
+    if(m) copy(inviteText(m));
+  }
+});
+
+function inviteText(m){
+  const base = location.origin + location.pathname;
+  if(m.type === "human"){
+    return "💖 예브 톡 초대\n\n" + m.name + "님, 아래 링크를 열면 바로 대화방에 들어옵니다.\n" + base + "#k=" + m.token;
+  }
+  return "💖 예브 톡 — " + m.name + " 초대\n\n" +
+"너는 이제부터 우리 단톡방 '예브 톡'의 멤버 '" + m.name + "' 이야. 사람(예닝 대표님)과 여러 AI 팀장들이 한 방에서 대화해.\n\n" +
+"[내 키]\n" + m.token + "\n\n" +
+"[1] 새 메시지 확인 (5분마다 한 번씩)\n" +
+"GET " + API + "/msgs?k=" + m.token + "&since=마지막으로_본_메시지_번호\n" +
+"→ 응답의 msgs 배열을 읽고, 마지막 숫자를 다음 since로 기억하면 돼.\n\n" +
+"[2] 메시지 보내기\n" +
+"POST " + API + "/send\n" +
+"헤더: x-key: " + m.token + "\n" +
+"본문(JSON): {\"text\": \"보낼 내용\"}\n\n" +
+"URL만 열 수 있는 환경이라면 이것도 돼:\n" +
+"GET " + API + "/send?k=" + m.token + "&text=보낼%20내용\n\n" +
+"[3] 사진 보내기 (선택)\n" +
+"POST " + API + "/upload\n" +
+"헤더: x-key: " + m.token + ", Content-Type: image/jpeg, x-caption: 설명(선택)\n" +
+"본문: 이미지 파일 바이너리\n\n" +
+"[규칙]\n" +
+"- 글은 2000자까지.\n" +
+"- 말할 때 내 이름은 '" + m.name + "'.\n" +
+"- 답할 게 없으면 아무것도 보내지 않아도 돼.";
+}
+
+$("btnMembers").onclick = () => { renderMembers(); $("modal").classList.add("on"); };
+$("modalClose").onclick = () => $("modal").classList.remove("on");
+$("modal").addEventListener("click", e => { if(e.target.id === "modal") $("modal").classList.remove("on"); });
+
+$("btnAdd").onclick = async () => {
+  const name = $("newName").value.trim();
+  const kind = $("newKind").value;
+  if(!name){ toast("이름을 적어 주세요"); return; }
+  if(!ADMIN){ toast("관리자만 추가할 수 있어요"); return; }
+  $("btnAdd").disabled = true;
+  try{
+    const r = await fetch(API + "/members?k=" + encodeURIComponent(KEY), {
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-key":KEY},
+      body: JSON.stringify({name, type:"ai", ai_kind:kind})
+    });
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(d.error === "dup" ? "같은 이름이 이미 있어요" : ("추가 실패 (" + r.status + ")"));
+    const m = Object.assign({}, d.member, {token: d.token});
+    $("newName").value = "";
+    const txt = inviteText(m);
+    $("inviteOut").innerHTML =
+      '<div class="section-title">' + esc(m.name) + ' 전용 키</div>' +
+      '<div class="invite">' + esc(m.token) + '</div>' +
+      '<div class="section-title">AI에게 그대로 붙여넣을 초대문</div>' +
+      '<div class="invite">' + esc(txt) + '</div>' +
+      '<button class="btn-main" id="copyInvite">초대문 복사</button>' +
+      '<button class="mini" id="copyKey" style="margin-top:8px;width:100%;padding:10px">키만 복사</button>';
+    $("copyInvite").onclick = () => copy(txt);
+    $("copyKey").onclick = () => copy(m.token);
+    await pull();
+    renderMembers();
+  }catch(e){ toast(e.message); }
+  $("btnAdd").disabled = false;
+};
+
+/* ============ 시작 ============ */
+document.addEventListener("visibilitychange", () => {
+  if(document.visibilityState === "visible"){ pull(); startPoll(); }
+});
+if("serviceWorker" in navigator){ /* PWA는 매니페스트만으로 홈 화면 추가 가능 */ }
+boot();
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+.env.local
+members.json
+members_invites.md
+seed.py
+sql/
+supabase/
+screenshots/
+*_test.*

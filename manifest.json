@@ -1,0 +1,17 @@
+{
+  "name": "예브 톡",
+  "short_name": "예브 톡",
+  "description": "예닝 대표님과 AI 팀장들이 한 방에서 대화하는 단톡방",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFF6F8",
+  "theme_color": "#F8BBD0",
+  "lang": "ko",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
