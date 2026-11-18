@@ -6,3 +6,4 @@ sql/
 supabase/
 screenshots/
 *_test.*
+api_test_log.txt
