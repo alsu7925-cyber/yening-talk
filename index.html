@@ -85,7 +85,9 @@
   .row.me .body{display:flex; flex-direction:column; align-items:flex-end}
   .foot{font-size:10.5px; color:#B99AA6; margin:4px 3px 0}
   .row.me .foot{text-align:right}
-  .bubble img{display:block; max-width:100%; border-radius:11px; margin:2px 0 0; cursor:zoom-in}
+  .bubble img{display:block; max-width:100%; max-height:320px; width:auto; border-radius:11px; margin:2px 0 0; cursor:zoom-in}
+  .bubble.imgs{padding:4px}
+  .bubble.imgs img{border-radius:12px; margin:0}
   .bubble .cap{margin-top:6px}
   .empty{text-align:center; color:#C0A2AE; font-size:13px; padding:40px 20px; line-height:1.9}
   /* ---------- composer ---------- */
@@ -214,7 +216,7 @@ let lastId = 0, msgs = [], pollTimer = null, loading = false;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
-function toast(t){ const el=$("toast"); el.textContent=t; el.classList.add("on"); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove("on"),1800); }
+function toast(t, ms){ const el=$("toast"); el.textContent=t; el.classList.add("on"); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove("on"), ms || 1800); }
 async function copy(text){
   try{ await navigator.clipboard.writeText(text); toast("복사했어요"); }
   catch(e){
@@ -347,13 +349,15 @@ function rowHTML(m){
   const k = kindOf(m);
   const who = esc(m.who);
   const body = [];
+  const hasText = !!(m.text && m.text.trim());
   if(m.img_url) body.push('<img src="' + esc(m.img_url) + '" alt="사진" data-img="' + esc(m.img_url) + '">');
-  if(m.text && m.text.trim()) body.push('<div class="cap">' + esc(m.text) + '</div>');
+  if(hasText) body.push('<div class="cap">' + esc(m.text) + '</div>');
+  const bubbleCls = (m.img_url && !hasText) ? 'bubble imgs' : 'bubble';
   return '<div class="row' + (mine ? ' me' : '') + '">' +
     '<div class="av ' + esc(k) + '">' + esc(initial(m.who)) + '</div>' +
     '<div class="body">' +
       '<div class="who"><b>' + who + '</b><span class="tag ' + esc(k) + '">' + esc(tagText(m)) + '</span></div>' +
-      '<div class="bubble">' + body.join("") + '</div>' +
+      '<div class="' + bubbleCls + '">' + body.join("") + '</div>' +
       '<div class="foot">' + esc(timeLabel(m.ts)) + '</div>' +
     '</div></div>';
 }
@@ -400,7 +404,7 @@ $("fileInput").onchange = async (e) => {
   if(!f) return;
   if(f.size > 5 * 1024 * 1024){ toast("5MB 이하 사진만 올릴 수 있어요"); return; }
   const cap = input.value.trim();
-  $("btnPhoto").disabled = true; toast("사진 올리는 중…");
+  $("btnPhoto").disabled = true; toast("사진 올리는 중…", 8000);
   try{
     const r = await fetch(API + "/upload?k=" + encodeURIComponent(KEY), {
       method:"POST",
@@ -411,6 +415,7 @@ $("fileInput").onchange = async (e) => {
     input.value = ""; input.style.height="auto";
     await pull();
     scrollEl().scrollTop = scrollEl().scrollHeight;
+    toast("사진 올렸어요");
   }catch(err){ toast(err.message); }
   $("btnPhoto").disabled = false;
 };
@@ -498,6 +503,7 @@ $("btnAdd").onclick = async () => {
     $("copyKey").onclick = () => copy(m.token);
     await pull();
     renderMembers();
+    setTimeout(() => { const el = $("inviteOut"); if(el && el.scrollIntoView) el.scrollIntoView({ block: "end", behavior: "smooth" }); }, 80);
   }catch(e){ toast(e.message); }
   $("btnAdd").disabled = false;
 };
